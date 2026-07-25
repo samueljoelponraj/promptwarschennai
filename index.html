@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ResilienceAI - Multi-Modal GenAI Recovery Platform</title>
-  <meta name="description" content="Voice-first recovery and crisis prevention platform powered by multi-agent Gemini AI.">
+  <meta name="description" content="Voice-first recovery platform featuring real-time Gemini AI voice calls.">
   <link rel="stylesheet" href="src/styles/theme.css">
 </head>
 <body>
@@ -31,7 +31,7 @@
     <div class="sos-banner glass-panel">
       <div>
         <h3 style="font-family: var(--font-heading); color: #fff;">Need Immediate Crisis Support?</h3>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">One-touch SOS notifies your sponsor, care team & local crisis support.</p>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">One-touch SOS notifies your sponsor, care team & local support.</p>
       </div>
       <button class="sos-btn" id="sosTriggerBtn" onclick="triggerSOS()">🚨 Emergency SOS</button>
     </div>
@@ -41,6 +41,16 @@
 
       <!-- Left Column: Voice Assistant & Primary View -->
       <section id="patientView">
+        
+        <!-- Live AI Voice Call Banner -->
+        <div class="glass-panel" style="padding: 1.5rem; text-align: center; margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(6, 182, 212, 0.15)); border: 1px solid var(--accent-cyan);">
+          <h2 style="font-family: var(--font-heading);">📞 Real-Time AI Voice Call</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Continuous back-and-forth phone-style conversation with Gemini 2.5 AI.</p>
+          <button class="sos-btn" style="background: linear-gradient(135deg, var(--accent-emerald), var(--accent-cyan)); margin-top: 1rem; font-size: 1.1rem; padding: 0.85rem 2rem;" onclick="startVoiceCall()">
+            📞 Start Live Voice Call
+          </button>
+        </div>
+
         <div class="hero-voice-card glass-panel">
           <h2 style="font-family: var(--font-heading); font-size: 1.75rem;">Voice Recovery Companion</h2>
           <p style="color: var(--text-muted); margin-top: 0.5rem;">Speak naturally. Connected to <strong>Google Cloud Vertex AI</strong> (<code>gemini-2.5-flash-native-audio</code>).</p>
@@ -74,7 +84,7 @@
           </div>
 
           <p id="aiResponseText" style="font-size: 1.1rem; margin-top: 1rem; color: var(--text-main);">
-            Hello Alex! I am your AI recovery companion powered by Gemini. Tap the mic or choose a quick prompt above to talk to me.
+            Hello Alex! I am your AI recovery companion powered by Gemini. Tap "Start Live Voice Call" or use the mic to talk to me.
           </p>
 
           <button id="ttsPlayBtn" class="chip" style="margin-top: 1rem; background: var(--accent-primary); color: white;" onclick="speakAIResponse()">
@@ -82,7 +92,7 @@
           </button>
         </div>
 
-        <!-- Metrics Row (Dynamic Live Data) -->
+        <!-- Metrics Row -->
         <div class="metrics-row">
           <div class="metric-card glass-panel">
             <div class="metric-label">Sobriety Streak</div>
@@ -162,6 +172,34 @@
       </aside>
     </div>
   </main>
+
+  <!-- Real-Time Voice Call Modal Overlay -->
+  <div class="modal-overlay" id="voiceCallModal">
+    <div style="text-align: center; width: 90%; max-width: 500px;" class="glass-panel" style="padding: 3rem 2rem;">
+      <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-primary)); margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; box-shadow: var(--shadow-glow); animation: pulse-ring 2s infinite;">
+        🤖
+      </div>
+
+      <h2 style="font-family: var(--font-heading); color: #fff;">Gemini 2.5 AI Voice Call</h2>
+      <p id="callStatusText" style="color: var(--accent-cyan); font-weight: 600; margin-top: 0.5rem;">Connected • Hands-Free Listening</p>
+      
+      <div id="callTimer" style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; color: var(--text-muted); margin: 1rem 0;">00:00</div>
+
+      <div style="background: var(--bg-card); padding: 1rem; border-radius: 12px; font-size: 1rem; color: var(--text-main); min-height: 70px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-glass);" id="callTranscriptText">
+        "Say anything... I am listening continuously."
+      </div>
+
+      <!-- Call Controls -->
+      <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 2rem;">
+        <button class="pulse-mic-btn" id="callMuteBtn" style="width: 60px; height: 60px; font-size: 1.25rem; margin: 0;" onclick="toggleCallMute()">
+          🎙️
+        </button>
+        <button class="sos-btn" style="background: var(--accent-rose); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.75rem;" onclick="endVoiceCall()">
+          🔴
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Interactive Daily Check-in Modal -->
   <div class="modal-overlay" id="checkinModal">

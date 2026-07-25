@@ -1,65 +1,121 @@
-// ResilienceAI - Multi-Modal Live Audio & WebRTC Client App
+// ResilienceAI - Multi-Modal Live AI Voice Call Engine
 
 let recognition = null;
 let isRecording = false;
+let isCallActive = false;
+let isCallMuted = false;
+let callTimerInterval = null;
+let callSecondsElapsed = 0;
 let currentPersona = 'patient';
 const USER_ID = 'user_123';
 
-// Web Audio API AudioContext for WebRTC & Native Audio Output
+// Web Audio Context & WebSockets
 let audioCtx = null;
 let mediaStream = null;
 let liveAudioSocket = null;
 
-// Determine backend HTTP and WebSocket API URLs
 const isLocal = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 const HTTP_BASE_URL = isLocal ? 'https://resilience-ai-958939656437.us-central1.run.app' : '';
 const WS_BASE_URL = isLocal 
   ? 'wss://resilience-ai-958939656437.us-central1.run.app' 
   : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
 
-// Initialize Web Audio Context (resumes on user interaction)
 function initAudioContext() {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (AudioContextClass) {
-      audioCtx = new AudioContextClass();
-    }
+    if (AudioContextClass) audioCtx = new AudioContextClass();
   }
   if (audioCtx && audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
 }
 
-// Connect WebRTC / WebSocket Live Audio Stream
-function connectLiveAudioWebSocket() {
+// ----------------------------------------------------
+// REAL-TIME AI VOICE CALL SYSTEM (Continuous Hands-Free)
+// ----------------------------------------------------
+
+async function startVoiceCall() {
+  initAudioContext();
+
   try {
-    const wsUrl = `${WS_BASE_URL}/api/v1/ai/ws/live-audio`;
-    liveAudioSocket = new WebSocket(wsUrl);
+    if (!mediaStream) {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    }
+  } catch (err) {
+    console.warn('Microphone permission error:', err);
+  }
 
-    liveAudioSocket.onopen = () => {
-      console.log('WebRTC / WebSocket Live Audio connected to Gemini 2.5');
-    };
+  isCallActive = true;
+  isCallMuted = false;
+  callSecondsElapsed = 0;
 
-    liveAudioSocket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'ai_response') {
-          handleAIResponsePayload(data);
-        }
-      } catch (err) {
-        console.warn('WebSocket message parse error:', err);
-      }
-    };
+  document.getElementById('voiceCallModal').classList.add('active');
+  document.getElementById('callStatusText').innerText = 'Connected • Hands-Free Listening';
+  document.getElementById('callStatusText').style.color = 'var(--accent-cyan)';
+  
+  startCallTimer();
+  initSpeechRecognition();
 
-    liveAudioSocket.onerror = (err) => {
-      console.warn('WebSocket error, falling back to HTTP:', err);
-    };
-  } catch (e) {
-    console.warn('WebSocket connection failed:', e);
+  // Speak initial greeting out loud!
+  const greeting = "Hello Alex, I'm on the line. I'm listening—how are you feeling right now?";
+  document.getElementById('callTranscriptText').innerText = `"${greeting}"`;
+  speakAIResponseText(greeting, () => {
+    // When greeting finishes, start listening automatically!
+    if (isCallActive && recognition && !isRecording && !isCallMuted) {
+      try { recognition.start(); } catch (e) {}
+    }
+  });
+}
+
+function endVoiceCall() {
+  isCallActive = false;
+  stopCallTimer();
+
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  if (recognition && isRecording) {
+    try { recognition.stop(); } catch (e) {}
+  }
+
+  document.getElementById('voiceCallModal').classList.remove('active');
+}
+
+function toggleCallMute() {
+  isCallMuted = !isCallMuted;
+  const btn = document.getElementById('callMuteBtn');
+  const status = document.getElementById('callStatusText');
+
+  if (isCallMuted) {
+    btn.style.background = 'var(--accent-rose)';
+    status.innerText = 'Microphone Muted';
+    status.style.color = 'var(--accent-rose)';
+    if (recognition && isRecording) recognition.stop();
+  } else {
+    btn.style.background = '';
+    status.innerText = 'Connected • Hands-Free Listening';
+    status.style.color = 'var(--accent-cyan)';
+    if (recognition && !isRecording) recognition.start();
   }
 }
 
-// Initialize Web Speech Recognition
+function startCallTimer() {
+  stopCallTimer();
+  const timerEl = document.getElementById('callTimer');
+  callTimerInterval = setInterval(() => {
+    callSecondsElapsed++;
+    const mins = String(Math.floor(callSecondsElapsed / 60)).padStart(2, '0');
+    const secs = String(callSecondsElapsed % 60).padStart(2, '0');
+    if (timerEl) timerEl.innerText = `${mins}:${secs}`;
+  }, 1000);
+}
+
+function stopCallTimer() {
+  if (callTimerInterval) clearInterval(callTimerInterval);
+}
+
+// ----------------------------------------------------
+// SPEECH RECOGNITION & VOICE ENGINE
+// ----------------------------------------------------
+
 function initSpeechRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (SpeechRecognition) {
@@ -73,7 +129,7 @@ function initSpeechRecognition() {
       const micBtn = document.getElementById('micBtn');
       const statusText = document.getElementById('micStatusText');
       if (micBtn) micBtn.classList.add('listening');
-      if (statusText) statusText.innerText = '🎙️ WebRTC Mic Active... Speak now!';
+      if (statusText) statusText.innerText = '🎙️ Live Listening... Speak now!';
     };
 
     recognition.onresult = (event) => {
@@ -83,6 +139,10 @@ function initSpeechRecognition() {
       }
       const display = document.getElementById('transcriptDisplay');
       if (display) display.innerHTML = `"${transcript}"`;
+
+      if (isCallActive) {
+        document.getElementById('callTranscriptText').innerText = `"${transcript}"`;
+      }
     };
 
     recognition.onend = () => {
@@ -90,44 +150,39 @@ function initSpeechRecognition() {
       const micBtn = document.getElementById('micBtn');
       const statusText = document.getElementById('micStatusText');
       if (micBtn) micBtn.classList.remove('listening');
-      if (statusText) statusText.innerText = 'Tap mic to start WebRTC voice conversation';
+      if (statusText) statusText.innerText = 'Tap mic to start hands-free conversation';
 
       const display = document.getElementById('transcriptDisplay');
       if (display && display.innerText !== '"Listening for your voice..."') {
         const text = display.innerText.replace(/"/g, '');
         processVoiceInput(text);
+      } else if (isCallActive && !isCallMuted) {
+        // Continuous Voice Call Loop: restart listening if no text captured yet
+        setTimeout(() => {
+          if (isCallActive && !isRecording && !isCallMuted && !window.speechSynthesis.speaking) {
+            try { recognition.start(); } catch (e) {}
+          }
+        }, 500);
       }
     };
 
     recognition.onerror = (event) => {
       console.warn('Speech recognition error:', event.error);
       isRecording = false;
-      const micBtn = document.getElementById('micBtn');
-      if (micBtn) micBtn.classList.remove('listening');
+      if (isCallActive && !isCallMuted) {
+        setTimeout(() => {
+          if (isCallActive && !isRecording && !isCallMuted) {
+            try { recognition.start(); } catch (e) {}
+          }
+        }, 1000);
+      }
     };
   }
 }
 
-// Toggle WebRTC Recording & Request Media Permissions
-async function toggleVoiceRecording() {
+function toggleVoiceRecording() {
   initAudioContext();
-
-  // Request WebRTC Microphone Access
-  try {
-    if (!mediaStream) {
-      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      console.log('WebRTC audio stream granted.');
-    }
-  } catch (err) {
-    console.warn('Microphone permission warning:', err);
-  }
-
   if (!recognition) initSpeechRecognition();
-  if (!recognition) {
-    alert('Web Speech API is not supported in this browser. You can use the quick speech chips below!');
-    return;
-  }
-
   if (isRecording) {
     recognition.stop();
   } else {
@@ -142,21 +197,19 @@ function simulateSpeech(text) {
   processVoiceInput(text);
 }
 
-// Send Voice Transcript via WebSocket or HTTP API
+// Process User Speech via Gemini API
 async function processVoiceInput(transcript) {
   const agentBadge = document.getElementById('agentBadge');
   const urgencyBadge = document.getElementById('urgencyBadge');
   const aiResponseText = document.getElementById('aiResponseText');
 
-  aiResponseText.innerText = 'Thinking... (Processing with Gemini 2.5 Flash Native Audio)';
-
-  // Try WebSocket stream first
-  if (liveAudioSocket && liveAudioSocket.readyState === WebSocket.OPEN) {
-    liveAudioSocket.send(JSON.stringify({ transcript: transcript }));
-    return;
+  const statusMsg = 'Gemini 2.5 is speaking...';
+  if (isCallActive) {
+    document.getElementById('callStatusText').innerText = statusMsg;
+    document.getElementById('callStatusText').style.color = 'var(--accent-amber)';
   }
+  aiResponseText.innerText = statusMsg;
 
-  // Fallback to HTTP REST API
   try {
     const res = await fetch(`${HTTP_BASE_URL}/api/v1/ai/voice-interact`, {
       method: 'POST',
@@ -166,66 +219,75 @@ async function processVoiceInput(transcript) {
 
     if (res.ok) {
       const data = await res.json();
-      handleAIResponsePayload(data);
+      agentBadge.innerText = `🤖 ${data.agent_name}`;
+      urgencyBadge.innerText = `STATUS: ${data.urgency_level}`;
+      aiResponseText.innerText = data.response_text;
+
+      if (isCallActive) {
+        document.getElementById('callTranscriptText').innerText = data.response_text;
+      }
+
+      speakAIResponseText(data.response_text, () => {
+        // CONTINUOUS VOICE CALL BACK-AND-FORTH LOOP!
+        if (isCallActive && !isCallMuted) {
+          document.getElementById('callStatusText').innerText = 'Connected • Listening...';
+          document.getElementById('callStatusText').style.color = 'var(--accent-cyan)';
+          if (recognition && !isRecording) {
+            try { recognition.start(); } catch (e) {}
+          }
+        }
+      });
     } else {
       throw new Error(`API returned ${res.status}`);
     }
   } catch (err) {
     console.warn('Backend API connection warning:', err);
-    aiResponseText.innerText = `I hear you. You mentioned "${transcript}". Taking things one step at a time is key.`;
-    speakAIResponse();
+    const fallbackMsg = `I hear you. You mentioned "${transcript}". Taking things one step at a time is key.`;
+    aiResponseText.innerText = fallbackMsg;
+    speakAIResponseText(fallbackMsg, () => {
+      if (isCallActive && !isCallMuted && recognition && !isRecording) {
+        try { recognition.start(); } catch (e) {}
+      }
+    });
   }
 }
 
-// Render AI Response and Automatically Play Voice Output
-function handleAIResponsePayload(data) {
-  const agentBadge = document.getElementById('agentBadge');
-  const urgencyBadge = document.getElementById('urgencyBadge');
-  const aiResponseText = document.getElementById('aiResponseText');
-
-  agentBadge.innerText = `🤖 ${data.agent_name}`;
-  urgencyBadge.innerText = `STATUS: ${data.urgency_level}`;
-
-  if (data.urgency_level === 'ACUTE_CRISIS') {
-    urgencyBadge.style.color = 'var(--accent-rose)';
-    triggerSOS();
-  } else if (data.urgency_level === 'HIGH_CRAVING') {
-    urgencyBadge.style.color = 'var(--accent-amber)';
-    openBreathingModal();
-  } else {
-    urgencyBadge.style.color = 'var(--accent-emerald)';
-  }
-
-  aiResponseText.innerText = data.response_text;
-  
-  // Automatically speak response out loud!
-  speakAIResponse();
-}
-
-// Automatic Native Audio Speech Synthesis
-function speakAIResponse() {
+// Play Voice Output and Trigger Callback When Speech Ends
+function speakAIResponseText(text, onCompleteCallback) {
   initAudioContext();
   if ('speechSynthesis' in window) {
-    const text = document.getElementById('aiResponseText').innerText;
-    window.speechSynthesis.cancel(); // Clear queue
-    
+    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
-    utterance.volume = 1.0;
 
-    // Pick warm natural English voice if available
+    utterance.onend = () => {
+      if (onCompleteCallback) onCompleteCallback();
+    };
+
+    utterance.onerror = () => {
+      if (onCompleteCallback) onCompleteCallback();
+    };
+
     const voices = window.speechSynthesis.getVoices();
     const naturalVoice = voices.find(v => v.lang.includes('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha')));
-    if (naturalVoice) {
-      utterance.voice = naturalVoice;
-    }
+    if (naturalVoice) utterance.voice = naturalVoice;
 
     window.speechSynthesis.speak(utterance);
+  } else {
+    if (onCompleteCallback) onCompleteCallback();
   }
 }
 
-// Dynamic Recovery Metrics Loading
+function speakAIResponse() {
+  const text = document.getElementById('aiResponseText').innerText;
+  speakAIResponseText(text);
+}
+
+// ----------------------------------------------------
+// RECOVERY METRICS & DASHBOARD APIs
+// ----------------------------------------------------
+
 async function loadRecoveryMetrics() {
   try {
     const res = await fetch(`${HTTP_BASE_URL}/api/v1/recovery/streak/${USER_ID}`);
@@ -242,7 +304,6 @@ async function loadRecoveryMetrics() {
   }
 }
 
-// Daily Check-in Modal Logic
 function openCheckinModal() {
   document.getElementById('checkinModal').classList.add('active');
 }
@@ -289,11 +350,9 @@ async function promptSetStartDate() {
   }
 }
 
-// Caregiver Alerts Management
 async function loadCaregiverAlerts() {
   const container = document.getElementById('caregiverAlertsList');
   if (!container) return;
-
   try {
     const res = await fetch(`${HTTP_BASE_URL}/api/v1/caregiver/alerts`);
     if (res.ok) {
@@ -342,11 +401,9 @@ async function resolveCaregiverAlert(alertId) {
   }
 }
 
-// Emergency Responders Tracking
 async function loadEmergencyDispatches() {
   const container = document.getElementById('emergencyDispatchList');
   if (!container) return;
-
   try {
     const res = await fetch(`${HTTP_BASE_URL}/api/v1/emergency/active-dispatches`);
     if (res.ok) {
@@ -368,7 +425,6 @@ async function loadEmergencyDispatches() {
   }
 }
 
-// Switch Persona Tabs
 function switchPersona(persona) {
   currentPersona = persona;
   document.querySelectorAll('.persona-btn').forEach(btn => btn.classList.remove('active'));
@@ -383,7 +439,6 @@ function switchPersona(persona) {
   if (persona === 'emergency') loadEmergencyDispatches();
 }
 
-// Trigger Emergency SOS Live
 async function triggerSOS() {
   initAudioContext();
   const agentBadge = document.getElementById('agentBadge');
@@ -437,6 +492,5 @@ function animateBreathing() {
 // Initialize on page load
 window.addEventListener('DOMContentLoaded', () => {
   initSpeechRecognition();
-  connectLiveAudioWebSocket();
   loadRecoveryMetrics();
 });
