@@ -4,17 +4,8 @@ from backend.schemas.models import RecoveryStreak, DailyCheckInRequest, StreakUp
 
 router = APIRouter(prefix="/api/v1/recovery", tags=["Recovery Tracking"])
 
-# In-memory dynamic store
-STATE_STORE = {
-    "user_123": {
-        "sober_start_date": "2026-06-13",
-        "checkins": [
-            {"mood": 8, "notes": "Feeling focused and hopeful", "timestamp": "2026-07-24"},
-            {"mood": 9, "notes": "Attended support group", "timestamp": "2026-07-25"}
-        ],
-        "triggers_count": 2
-    }
-}
+# Clean dynamic state store (no pre-populated dummy dates)
+STATE_STORE = {}
 
 @router.get("/streak/{user_id}", response_model=RecoveryStreak)
 def get_streak(user_id: str):
@@ -22,7 +13,7 @@ def get_streak(user_id: str):
     Returns dynamically calculated sobriety streak & metrics for user.
     """
     user_data = STATE_STORE.get(user_id, {
-        "sober_start_date": "2026-06-13",
+        "sober_start_date": date.today().isoformat(),
         "checkins": [],
         "triggers_count": 0
     })
@@ -33,7 +24,7 @@ def get_streak(user_id: str):
         days_sober = 0
         
     checkins = user_data.get("checkins", [])
-    avg_mood = sum([c.get("mood", 7) for c in checkins]) / len(checkins) if checkins else 8.0
+    avg_mood = sum([c.get("mood", 7) for c in checkins]) / len(checkins) if checkins else 0.0
 
     return RecoveryStreak(
         user_id=user_id,

@@ -5,7 +5,7 @@ from backend.schemas.models import EmergencySOSRequest, EmergencySOSResponse
 
 router = APIRouter(prefix="/api/v1/emergency", tags=["Emergency SOS"])
 
-# Active SOS Dispatch Store
+# Clean Emergency Dispatch Store
 EMERGENCY_LOGS: List[dict] = []
 
 @router.post("/trigger-sos", response_model=EmergencySOSResponse)
@@ -28,7 +28,7 @@ def trigger_sos(request: EmergencySOSRequest):
         sos_id=sos_id,
         status="ALERTED_CAREGIVERS",
         safety_message="Emergency contacts notified. Guidance script active. Help is on the way.",
-        contacts_notified=["Sponsor: Sarah M.", "Caregiver: John (Brother)", "Crisis Helpline (988)"],
+        contacts_notified=["Sponsor & Caregiver (Alerted)", "Crisis Helpline (988 Standby)"],
         timestamp=datetime.utcnow().isoformat()
     )
 
