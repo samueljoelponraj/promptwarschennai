@@ -1,0 +1,6 @@
+runtime: python311
+entrypoint: uvicorn backend.app:app --host 0.0.0.0 --port $PORT
+
+env_variables:
+  GEMINI_API_KEY: 'AIzaSyAgypNY4__K5QXMNy8uE8e-jesspDdHv1U'
+  GEMINI_LIVE_MODEL: 'models/gemini-3.1-flash-live-preview'

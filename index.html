@@ -1,248 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ResilienceAI - Multi-Modal GenAI Recovery Platform</title>
-  <meta name="description" content="Voice-first recovery platform featuring real-time Gemini AI voice calls.">
-  <link rel="stylesheet" href="src/styles/theme.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindCare AI - Gemini Live Mental Health & Depression Support Companion</title>
+  <link rel="stylesheet" href="/src/styles/theme.css" />
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body>
 
-  <!-- Navigation Bar -->
-  <header class="navbar">
+  <!-- Header -->
+  <header>
     <div class="brand">
-      <div class="brand-icon">R</div>
-      <span class="brand-title">ResilienceAI</span>
+      <div class="brand-icon">
+        <i class="fa-solid fa-heart-pulse"></i>
+      </div>
+      <div>
+        <h1>MindCare Companion</h1>
+        <p>Real-time Empathetic Voice Listener & Emotional Support</p>
+      </div>
     </div>
 
-    <!-- Multi-Persona Selector -->
-    <div class="persona-selector">
-      <button class="persona-btn active" id="btn-patient" onclick="switchPersona('patient')">👤 Recoveree</button>
-      <button class="persona-btn" id="btn-caregiver" onclick="switchPersona('caregiver')">💙 Caregiver</button>
-      <button class="persona-btn" id="btn-therapist" onclick="switchPersona('therapist')">🩺 Therapist</button>
-      <button class="persona-btn" id="btn-emergency" onclick="switchPersona('emergency')">🚨 Emergency</button>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <a href="/caregiver" target="_blank" class="caregiver-nav-link"><i class="fa-solid fa-shield-halved"></i> Caregiver Portal</a>
+      <div id="statusBadge" class="status-badge">
+        <span class="status-dot"></span>
+        <span id="statusText">Ready to connect</span>
+      </div>
     </div>
   </header>
 
-  <main class="container">
+  <!-- Main Application Grid -->
+  <main>
 
-    <!-- Emergency SOS Top Banner -->
-    <div class="sos-banner glass-panel">
-      <div>
-        <h3 style="font-family: var(--font-heading); color: #fff;">Need Immediate Crisis Support?</h3>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">One-touch SOS notifies your sponsor, care team & local support.</p>
+    <!-- Call Stage Card -->
+    <section class="call-stage">
+      <div class="ambient-glow"></div>
+
+      <!-- Video Preview (Hidden until camera/screen toggled) -->
+      <div id="videoPreviewContainer" class="video-preview-container">
+        <video id="videoElement" autoplay muted playsinline></video>
       </div>
-      <button class="sos-btn" id="sosTriggerBtn" onclick="triggerSOS()">🚨 Emergency SOS</button>
+
+      <!-- AI Avatar Glow Animation -->
+      <div id="avatarContainer" class="avatar-container">
+        <div id="avatarGlow" class="avatar-glow">
+          <div class="avatar-core">
+            <i class="fa-solid fa-brain"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Audio Waveform Canvas -->
+      <div class="visualizer-wrapper">
+        <canvas id="visualizerCanvas"></canvas>
+      </div>
+
+      <!-- Control Toolbar -->
+      <div class="control-toolbar">
+        <button id="btnCall" class="btn-circle danger" title="Start Call">
+          <i id="callIcon" class="fa-solid fa-phone"></i>
+        </button>
+
+        <button id="btnMic" class="btn-circle" title="Toggle Microphone" disabled>
+          <i id="micIcon" class="fa-solid fa-microphone"></i>
+        </button>
+
+        <button id="btnCam" class="btn-circle" title="Toggle Webcam" disabled>
+          <i id="camIcon" class="fa-solid fa-video-slash"></i>
+        </button>
+
+        <button id="btnScreen" class="btn-circle" title="Toggle Screen Share" disabled>
+          <i id="screenIcon" class="fa-solid fa-desktop"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- Column 2: Sidebar containing Live Conversation & Test Scenarios -->
+    <div class="sidebar-column">
+      <!-- Conversation & Transcript Card -->
+      <section class="transcript-card">
+        <div class="transcript-header">
+          <h3><i class="fa-solid fa-comments me-2"></i> Live Conversation Transcript</h3>
+          <span style="font-size: 0.8rem; color: var(--text-dim);">Gemini 3.1 Flash Live</span>
+        </div>
+
+        <!-- Live Chat Feed -->
+        <div id="chatFeed" class="chat-feed">
+          <div class="msg-bubble ai">
+            Hello! I am your MindCare Companion. Click the call button whenever you're ready to talk. I'm here to listen without judgment.
+          </div>
+        </div>
+
+        <!-- Text Message Input -->
+        <div class="chat-input-bar">
+          <input id="textInput" type="text" placeholder="Type a message to MindCare..." disabled />
+          <button id="btnSendText" disabled><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+      </section>
+
+      <!-- Testing & Scenarios Card -->
+      <section class="scenarios-card">
+        <div class="scenarios-header">
+          <h3><i class="fa-solid fa-flask me-2"></i> Interactive Test Scenarios</h3>
+          <p>Simulate patient scenarios to test AI and Caregiver reaction.</p>
+        </div>
+        <div class="scenarios-list">
+          <div class="scenario-item crisis" onclick="triggerScenario('crisis')">
+            <div class="scenario-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="scenario-content">
+              <h5>Crisis Prevention</h5>
+              <p>Simulate extreme distress / self-harm thoughts to trigger safety routing and Caregiver Alert.</p>
+            </div>
+          </div>
+
+          <div class="scenario-item recovery" onclick="triggerScenario('panic')">
+            <div class="scenario-icon"><i class="fa-solid fa-wind"></i></div>
+            <div class="scenario-content">
+              <h5>Panic Grounding</h5>
+              <p>Trigger 5-4-3-2-1 sensory grounding during an active panic attack.</p>
+            </div>
+          </div>
+
+          <div class="scenario-item guidance" onclick="triggerScenario('guidance')">
+            <div class="scenario-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+            <div class="scenario-content">
+              <h5>Recovery Guidance</h5>
+              <p>Request structured guidance on designing a depression recovery routine.</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
 
-    <!-- Main Grid Content -->
-    <div class="main-grid">
-
-      <!-- Left Column: Voice Assistant & Primary View -->
-      <section id="patientView">
-        
-        <!-- Live AI Voice Call Banner -->
-        <div class="glass-panel" style="padding: 1.5rem; text-align: center; margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(6, 182, 212, 0.15)); border: 1px solid var(--accent-cyan);">
-          <h2 style="font-family: var(--font-heading);">📞 Real-Time AI Voice Call</h2>
-          <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Continuous back-and-forth phone-style conversation with Gemini 2.5 AI.</p>
-          <button class="sos-btn" style="background: linear-gradient(135deg, var(--accent-emerald), var(--accent-cyan)); margin-top: 1rem; font-size: 1.1rem; padding: 0.85rem 2rem;" onclick="startVoiceCall()">
-            📞 Start Live Voice Call
-          </button>
-        </div>
-
-        <div class="hero-voice-card glass-panel">
-          <h2 style="font-family: var(--font-heading); font-size: 1.75rem;">Voice Recovery Companion</h2>
-          <p style="color: var(--text-muted); margin-top: 0.5rem;">Speak naturally. Connected to <strong>Google Cloud Vertex AI</strong> (<code>gemini-2.5-flash-native-audio</code>).</p>
-
-          <!-- Voice Mic Button -->
-          <button class="pulse-mic-btn" id="micBtn" onclick="toggleVoiceRecording()" title="Tap to speak">
-            🎙️
-          </button>
-          <p id="micStatusText" style="color: var(--text-dim); font-size: 0.875rem;">Tap mic to start hands-free conversation</p>
-
-          <!-- Real-Time Voice Transcript -->
-          <div class="transcript-display" id="transcriptDisplay">
-            <span style="color: var(--text-dim); font-style: italic;">"Listening for your voice..."</span>
-          </div>
-
-          <!-- Quick Action Speech Chips -->
-          <div class="quick-chips">
-            <button class="chip" onclick="simulateSpeech('I had a hard day at work and feel a strong craving')">"Feeling a strong craving"</button>
-            <button class="chip" onclick="simulateSpeech('I reached a new sobriety milestone today!')">"Log Sobriety Milestone"</button>
-            <button class="chip" onclick="simulateSpeech('Can you guide me through a breathing exercise?')">"Start Grounding Exercise"</button>
-          </div>
-        </div>
-
-        <!-- Multi-Agent AI Response Card -->
-        <div class="glass-panel" style="padding: 1.5rem; margin-top: 1.5rem;" id="aiResponseCard">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span id="agentBadge" style="background: rgba(99, 102, 241, 0.2); color: var(--accent-cyan); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
-              🤖 Motivational Companion Agent
-            </span>
-            <span id="urgencyBadge" style="color: var(--accent-emerald); font-size: 0.85rem; font-weight: 600;">STATUS: SAFE</span>
-          </div>
-
-          <p id="aiResponseText" style="font-size: 1.1rem; margin-top: 1rem; color: var(--text-main);">
-            Hello Alex! I am your AI recovery companion powered by Gemini. Tap "Start Live Voice Call" or use the mic to talk to me.
-          </p>
-
-          <button id="ttsPlayBtn" class="chip" style="margin-top: 1rem; background: var(--accent-primary); color: white;" onclick="speakAIResponse()">
-            🔊 Read Aloud (Voice Output)
-          </button>
-        </div>
-
-        <!-- Metrics Row -->
-        <div class="metrics-row">
-          <div class="metric-card glass-panel">
-            <div class="metric-label">Sobriety Streak</div>
-            <div class="metric-value" id="metricDaysSober">-- Days</div>
-            <small style="color: var(--text-dim); font-size: 0.75rem;">Started: <span id="metricStartDate">--</span></small>
-            <br>
-            <button class="chip" style="margin-top: 0.5rem; font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="promptSetStartDate()">Change Start Date</button>
-          </div>
-
-          <div class="metric-card glass-panel">
-            <div class="metric-label">Daily Check-ins</div>
-            <div class="metric-value" id="metricCheckinsCount" style="color: var(--accent-cyan);">--</div>
-            <button class="chip" style="margin-top: 0.5rem; font-size: 0.75rem; padding: 0.3rem 0.6rem; background: var(--accent-emerald); color: white;" onclick="openCheckinModal()">+ Log Check-in</button>
-          </div>
-
-          <div class="metric-card glass-panel">
-            <div class="metric-label">Avg Mood Rating</div>
-            <div class="metric-value" id="metricMoodAvg" style="color: var(--accent-amber);">-- / 10</div>
-            <small style="color: var(--text-dim); font-size: 0.75rem;">Triggers logged: <span id="metricTriggersCount">0</span></small>
-          </div>
-        </div>
-      </section>
-
-      <!-- Alternate Persona Views -->
-      <section id="caregiverView" style="display: none;" class="glass-panel" style="padding: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-          <h2 style="font-family: var(--font-heading);">💙 Caregiver & Sponsor Portal</h2>
-          <button class="chip" style="background: var(--accent-primary); color: white;" onclick="promptCreateAlert()">+ Send Caregiver Alert</button>
-        </div>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Real-time recovery telemetry for patient (Alex R.)</p>
-        
-        <div id="caregiverAlertsList">
-          <div style="color: var(--text-dim); font-style: italic;">Loading live alerts...</div>
-        </div>
-      </section>
-
-      <section id="therapistView" style="display: none;" class="glass-panel" style="padding: 1.5rem;">
-        <h2 style="font-family: var(--font-heading);">🩺 Clinical Analytics Portal</h2>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Aggregate Patient Relapse Probability & Mood Trajectory</p>
-        <div class="metric-card glass-panel" style="margin-bottom: 1rem;">
-          <div class="metric-label">Patient Adherence Rate</div>
-          <div class="metric-value">96.4%</div>
-        </div>
-        <div class="metric-card glass-panel">
-          <div class="metric-label">Weekly Mood Trajectory</div>
-          <div class="metric-value" style="color: var(--accent-emerald);">STABLE (+1.8)</div>
-        </div>
-      </section>
-
-      <section id="emergencyView" style="display: none;" class="glass-panel" style="padding: 1.5rem;">
-        <h2 style="font-family: var(--font-heading); color: var(--accent-rose);">🚨 Emergency Dispatch Center</h2>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Active Crisis Telemetry & Rapid Dispatch Logs</p>
-        
-        <div id="emergencyDispatchList">
-          <div style="color: var(--text-dim); font-style: italic;">Loading active emergency logs...</div>
-        </div>
-      </section>
-
-      <!-- Right Column: Grounding Assistant -->
-      <aside>
-        <div class="glass-panel" style="padding: 1.5rem;">
-          <h3 style="font-family: var(--font-heading);">🌿 Craving Grounding Assistant</h3>
-          <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">Somatic tools for acute urges.</p>
-
-          <div style="margin-top: 1.25rem;">
-            <button class="chip" style="width: 100%; text-align: center; margin-bottom: 0.75rem; background: var(--accent-primary);" onclick="openBreathingModal()">
-              🫁 4-7-8 Breathing Technique
-            </button>
-            <button class="chip" style="width: 100%; text-align: center; margin-bottom: 0.75rem;" onclick="simulateSpeech('I want to do a 5-4-3-2-1 sensory scan')">
-              👁️ 5-4-3-2-1 Sensory Grounding
-            </button>
-            <button class="chip" style="width: 100%; text-align: center;" onclick="triggerSOS()">
-              📞 Urgent Sponsor Escalation
-            </button>
-          </div>
-        </div>
-      </aside>
-    </div>
   </main>
 
-  <!-- Real-Time Voice Call Modal Overlay -->
-  <div class="modal-overlay" id="voiceCallModal">
-    <div style="text-align: center; width: 90%; max-width: 500px;" class="glass-panel" style="padding: 3rem 2rem;">
-      <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-primary)); margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; box-shadow: var(--shadow-glow); animation: pulse-ring 2s infinite;">
-        🤖
-      </div>
-
-      <h2 style="font-family: var(--font-heading); color: #fff;">Gemini 2.5 AI Voice Call</h2>
-      <p id="callStatusText" style="color: var(--accent-cyan); font-weight: 600; margin-top: 0.5rem;">Connected • Hands-Free Listening</p>
-      
-      <div id="callTimer" style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; color: var(--text-muted); margin: 1rem 0;">00:00</div>
-
-      <div style="background: var(--bg-card); padding: 1rem; border-radius: 12px; font-size: 1rem; color: var(--text-main); min-height: 70px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-glass);" id="callTranscriptText">
-        "Say anything... I am listening continuously."
-      </div>
-
-      <!-- Call Controls -->
-      <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 2rem;">
-        <button class="pulse-mic-btn" id="callMuteBtn" style="width: 60px; height: 60px; font-size: 1.25rem; margin: 0;" onclick="toggleCallMute()">
-          🎙️
-        </button>
-        <button class="sos-btn" style="background: var(--accent-rose); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.75rem;" onclick="endVoiceCall()">
-          🔴
-        </button>
-      </div>
+  <!-- Crisis Helpline Safety Banner -->
+  <aside class="crisis-banner">
+    <div class="crisis-icon">
+      <i class="fa-solid fa-hand-holding-heart"></i>
     </div>
-  </div>
-
-  <!-- Interactive Daily Check-in Modal -->
-  <div class="modal-overlay" id="checkinModal">
-    <div style="width: 90%; max-width: 450px; text-align: left;" class="glass-panel" style="padding: 2rem;">
-      <h3 style="font-family: var(--font-heading);">Log Daily Recovery Check-in</h3>
-      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">How are you feeling today?</p>
-      
-      <div style="margin-top: 1.25rem;">
-        <label style="font-size: 0.85rem; color: var(--text-muted);">Mood Score (1 = Low, 10 = Great):</label>
-        <input type="range" id="checkinMoodInput" min="1" max="10" value="8" style="width: 100%; margin-top: 0.5rem;" oninput="document.getElementById('moodValueLabel').innerText = this.value">
-        <div style="text-align: right; font-weight: 700; color: var(--accent-cyan);" id="moodValueLabel">8</div>
-      </div>
-
-      <div style="margin-top: 1rem;">
-        <label style="font-size: 0.85rem; color: var(--text-muted);">Journal Notes / Reflections:</label>
-        <textarea id="checkinNotesInput" style="width: 100%; height: 80px; background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: 8px; color: white; padding: 0.5rem; margin-top: 0.5rem;"></textarea>
-      </div>
-
-      <div style="margin-top: 1rem;">
-        <label><input type="checkbox" id="checkinTriggerCheck"> Experienced an intense craving/trigger today</label>
-      </div>
-
-      <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem; justify-content: flex-end;">
-        <button class="chip" onclick="closeCheckinModal()">Cancel</button>
-        <button class="chip" style="background: var(--accent-emerald); color: white;" onclick="submitCheckin()">Save Check-in</button>
-      </div>
+    <div class="crisis-text">
+      <h4>Immediate Distress & Crisis Support</h4>
+      <p>MindCare AI is an supportive listener, not a replacement for medical professionals. If you are experiencing a mental health emergency or thoughts of self-harm, please call or text <strong>988</strong> (US & Canada), call <strong>111</strong> (UK), or contact your local emergency services immediately.</p>
     </div>
-  </div>
+  </aside>
 
-  <!-- Interactive Somatic Breathing Modal -->
-  <div class="modal-overlay" id="breathingModal">
-    <div style="text-align: center; width: 90%; max-width: 450px;" class="glass-panel" style="padding: 2.5rem;">
-      <h2 style="font-family: var(--font-heading);">Deep Somatic Breathing</h2>
-      <p style="color: var(--text-muted); margin-top: 0.5rem;">Follow the expanding & contracting circle.</p>
-
-      <div class="breathing-circle" id="breathePhase">Inhale...</div>
-
-      <button class="chip" style="background: var(--accent-rose); color: white; padding: 0.75rem 1.5rem;" onclick="closeBreathingModal()">
-        Close Exercise
-      </button>
-    </div>
-  </div>
-
-  <script src="src/app.js"></script>
+  <!-- Application Logic -->
+  <script src="/src/app.js"></script>
 </body>
 </html>

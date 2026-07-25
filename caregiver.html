@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Caregiver Portal - MindCare AI</title>
+  <link rel="stylesheet" href="/src/styles/theme.css" />
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    /* Custom adjustments for dedicated Caregiver page */
+    body {
+      padding: 2rem;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .caregiver-layout {
+      width: 100%;
+      max-width: 1000px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    .caregiver-card {
+      height: auto;
+      min-height: 400px;
+      padding: 2.5rem;
+    }
+    .patient-vitals-container {
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .vital-item {
+      padding: 1rem 1.25rem;
+    }
+    .vital-val {
+      font-size: 1.5rem;
+    }
+    .alerts-log {
+      min-height: 200px;
+    }
+    .back-link {
+      color: var(--primary-cyan);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover {
+      color: var(--primary-sky);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="caregiver-layout">
+    
+    <div>
+      <a href="/" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Patient Workspace</a>
+      <header style="padding: 0; margin-bottom: 1rem;">
+        <div class="brand">
+          <div class="brand-icon" style="background: linear-gradient(135deg, var(--danger-red), var(--accent-lavender)); box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div>
+            <h1 style="background: linear-gradient(135deg, #ffffff, #fca5a5); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">MindCare Caregiver Portal</h1>
+            <p>Real-Time Patient Distress & Crisis Remote Monitor</p>
+          </div>
+        </div>
+        <div id="statusBadge" class="status-badge connected">
+          <span class="status-dot" style="background: var(--success-green); box-shadow: 0 0 10px var(--success-green);"></span>
+          <span id="statusText">Active Monitor Link</span>
+        </div>
+      </header>
+    </div>
+
+    <!-- Caregiver Dashboard Main Panel -->
+    <section class="caregiver-card">
+      <div class="caregiver-header">
+        <h3><i class="fa-solid fa-users me-2"></i> Monitored Patient: Samuel Ponraj</h3>
+        <span class="caregiver-badge active">System Live</span>
+      </div>
+
+      <!-- Patient Health Status / Vitals -->
+      <div class="patient-vitals-container">
+        <div class="vital-item">
+          <span class="vital-label">Vitals State</span>
+          <span id="vitalState" class="vital-val stable">Stable</span>
+        </div>
+        <div class="vital-item">
+          <span class="vital-label">Pulsing Heart Rate</span>
+          <span id="vitalHeartRate" class="vital-val"><i class="fa-solid fa-heart pulse-slow text-danger"></i> 72 bpm</span>
+        </div>
+        <div class="vital-item">
+          <span class="vital-label">Connection Status</span>
+          <span id="patientConnState" class="vital-val" style="color: var(--primary-cyan);">Monitoring</span>
+        </div>
+      </div>
+
+      <!-- Caregiver Live Notifications Log -->
+      <div class="alerts-log-container">
+        <h4 style="font-size: 0.9rem; margin-bottom: 0.75rem;">Safety Monitoring Log</h4>
+        <div id="alertsLog" class="alerts-log">
+          <div class="alert-log-item info">
+            <span class="log-time">Just Now</span>
+            <span class="log-msg">Caregiver connection established. Awaiting patient activity...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emergency Alert Banner Overlay (flashes when crisis is triggered) -->
+      <div id="emergencyOverlay" class="emergency-overlay">
+        <div class="emergency-box" style="padding: 2.5rem; max-width: 500px;">
+          <div class="emergency-icon" style="font-size: 3rem;"><i class="fa-solid fa-triangle-exclamation animate-bounce"></i></div>
+          <h4 style="font-size: 1.5rem; margin-bottom: 0.75rem;">PATIENT DISTRESS DETECTED</h4>
+          <p id="alertDescription" style="font-size: 0.95rem; margin-bottom: 2rem;">Patient Samuel Ponraj has expressed severe distress / thoughts of self-harm.</p>
+          <div class="emergency-actions">
+            <button class="btn-emergency call" style="padding: 0.8rem; font-size: 0.95rem;" onclick="resolveEmergency('called')">Call Patient</button>
+            <button class="btn-emergency dispatch" style="padding: 0.8rem; font-size: 0.95rem;" onclick="resolveEmergency('dispatched')">Dispatch 988 Lifeline Contact</button>
+            <button class="btn-emergency dismiss" style="padding: 0.8rem; font-size: 0.95rem;" onclick="resolveEmergency('dismissed')">Mute Alarm</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Application Logic -->
+  <script src="/src/caregiver.js"></script>
+</body>
+</html>
