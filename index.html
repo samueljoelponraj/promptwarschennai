@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResilienceAI - Multi-Modal GenAI Recovery & Crisis Platform</title>
+  <meta name="description" content="Voice-first, zero-typing recovery and prevention companion powered by multi-agent AI.">
+  <link rel="stylesheet" href="src/styles/theme.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="brand">
+      <div class="brand-icon">R</div>
+      <span class="brand-title">ResilienceAI</span>
+    </div>
+
+    <!-- Multi-Persona Selector -->
+    <div class="persona-selector">
+      <button class="persona-btn active" onclick="switchPersona('patient')">👤 Recoveree</button>
+      <button class="persona-btn" onclick="switchPersona('caregiver')">💙 Caregiver</button>
+      <button class="persona-btn" onclick="switchPersona('therapist')">🩺 Therapist</button>
+      <button class="persona-btn" onclick="switchPersona('emergency')">🚨 Emergency</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Emergency SOS Top Banner -->
+    <div class="sos-banner glass-panel">
+      <div>
+        <h3 style="font-family: var(--font-heading); color: #fff;">Need Immediate Crisis Support?</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">One-touch SOS notifies your sponsor, care team & local support.</p>
+      </div>
+      <button class="sos-btn" id="sosTriggerBtn" onclick="triggerSOS()">🚨 Emergency SOS</button>
+    </div>
+
+    <!-- Main Grid Content -->
+    <div class="main-grid">
+
+      <!-- Left Column: Voice Assistant & Primary View -->
+      <section id="patientView">
+        <div class="hero-voice-card glass-panel">
+          <h2 style="font-family: var(--font-heading); font-size: 1.75rem;">Voice Recovery Companion</h2>
+          <p style="color: var(--text-muted); margin-top: 0.5rem;">Speak naturally. Zero typing required.</p>
+
+          <!-- Voice Mic Button -->
+          <button class="pulse-mic-btn" id="micBtn" onclick="toggleVoiceRecording()" title="Tap to speak">
+            🎙️
+          </button>
+          <p id="micStatusText" style="color: var(--text-dim); font-size: 0.875rem;">Tap mic to start hands-free conversation</p>
+
+          <!-- Real-Time Voice Transcript -->
+          <div class="transcript-display" id="transcriptDisplay">
+            <span style="color: var(--text-dim); font-style: italic;">"Listening for your voice..."</span>
+          </div>
+
+          <!-- Quick Action Speech Chips -->
+          <div class="quick-chips">
+            <button class="chip" onclick="simulateSpeech('I had a hard day at work and feel an urge')">"Feeling a strong craving"</button>
+            <button class="chip" onclick="simulateSpeech('I completed 40 days sober today!')">"Log Sobriety Milestone"</button>
+            <button class="chip" onclick="simulateSpeech('Can you guide me through breathing?')">"Start Grounding Exercise"</button>
+          </div>
+        </div>
+
+        <!-- Multi-Agent AI Response Card -->
+        <div class="glass-panel" style="padding: 1.5rem; margin-top: 1.5rem;" id="aiResponseCard">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span id="agentBadge" style="background: rgba(99, 102, 241, 0.2); color: var(--accent-cyan); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+              🤖 Motivational Companion Agent
+            </span>
+            <span id="urgencyBadge" style="color: var(--accent-emerald); font-size: 0.85rem; font-weight: 600;">STATUS: SAFE</span>
+          </div>
+
+          <p id="aiResponseText" style="font-size: 1.1rem; margin-top: 1rem; color: var(--text-main);">
+            Hello Alex! I am here with you today. How is your recovery journey feeling right now? Tap the mic to respond.
+          </p>
+
+          <button id="ttsPlayBtn" class="chip" style="margin-top: 1rem; background: var(--accent-primary); color: white;" onclick="speakAIResponse()">
+            🔊 Read Aloud (Voice Output)
+          </button>
+        </div>
+
+        <!-- Metrics Row -->
+        <div class="metrics-row">
+          <div class="metric-card glass-panel">
+            <div class="metric-label">Sobriety Streak</div>
+            <div class="metric-value">42 Days</div>
+          </div>
+          <div class="metric-card glass-panel">
+            <div class="metric-label">Relapse Risk Score</div>
+            <div class="metric-value" style="color: var(--accent-emerald);">LOW (12%)</div>
+          </div>
+          <div class="metric-card glass-panel">
+            <div class="metric-label">Check-ins Completed</div>
+            <div class="metric-value">18 / 18</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Alternate Persona Views (Hidden by default) -->
+      <section id="caregiverView" style="display: none;" class="glass-panel" style="padding: 1.5rem;">
+        <h2 style="font-family: var(--font-heading);">💙 Caregiver & Sponsor Portal</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Real-time recovery telemetry for Alex R.</p>
+        <div style="background: var(--bg-card); padding: 1rem; border-radius: 12px; margin-bottom: 1rem;">
+          <strong>Alert: Elevated Fatigue Detected</strong>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Timestamp: Today, 8:30 AM</p>
+        </div>
+        <div style="background: var(--bg-card); padding: 1rem; border-radius: 12px;">
+          <strong>Milestone: 40 Days Sober!</strong>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Timestamp: Yesterday</p>
+        </div>
+      </section>
+
+      <section id="therapistView" style="display: none;" class="glass-panel" style="padding: 1.5rem;">
+        <h2 style="font-family: var(--font-heading);">🩺 Clinical Analytics Portal</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Aggregate Patient Relapse Probability & Mood Trajectory</p>
+        <div class="metric-card glass-panel" style="margin-bottom: 1rem;">
+          <div class="metric-label">Patient Adherence Rate</div>
+          <div class="metric-value">94.2%</div>
+        </div>
+        <div class="metric-card glass-panel">
+          <div class="metric-label">Weekly Mood Trajectory</div>
+          <div class="metric-value" style="color: var(--accent-emerald);">POSITIVE (+1.4)</div>
+        </div>
+      </section>
+
+      <section id="emergencyView" style="display: none;" class="glass-panel" style="padding: 1.5rem;">
+        <h2 style="font-family: var(--font-heading); color: var(--accent-rose);">🚨 Emergency Dispatch Center</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">GPS Location Telemetry & Rapid Response Dispatcher</p>
+        <div style="background: rgba(244, 63, 94, 0.1); border: 1px solid var(--accent-rose); padding: 1rem; border-radius: 12px;">
+          <strong>Active SOS Standby:</strong> No active crisis dispatch requests at this moment.
+        </div>
+      </section>
+
+      <!-- Right Column: Craving & Grounding Assistant -->
+      <aside>
+        <div class="glass-panel" style="padding: 1.5rem;">
+          <h3 style="font-family: var(--font-heading);">🌿 Craving Grounding Assistant</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">Quick somatic tools for acute urges.</p>
+
+          <div style="margin-top: 1.25rem;">
+            <button class="chip" style="width: 100%; text-align: center; margin-bottom: 0.75rem; background: var(--accent-primary);" onclick="openBreathingModal()">
+              🫁 4-7-8 Breathing Technique
+            </button>
+            <button class="chip" style="width: 100%; text-align: center; margin-bottom: 0.75rem;" onclick="simulateSpeech('I want to do a 5-4-3-2-1 sensory scan')">
+              👁️ 5-4-3-2-1 Sensory Grounding
+            </button>
+            <button class="chip" style="width: 100%; text-align: center;" onclick="simulateSpeech('Can you connect me to my sponsor?')">
+              📞 Call Sponsor (Sarah M.)
+            </button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Interactive Somatic Breathing Modal -->
+  <div class="modal-overlay" id="breathingModal">
+    <div style="text-align: center; width: 90%; max-width: 450px;" class="glass-panel" style="padding: 2.5rem;">
+      <h2 style="font-family: var(--font-heading);">Deep Somatic Breathing</h2>
+      <p style="color: var(--text-muted); margin-top: 0.5rem;">Follow the expanding & contracting circle.</p>
+
+      <div class="breathing-circle" id="breathePhase">Inhale...</div>
+
+      <button class="chip" style="background: var(--accent-rose); color: white; padding: 0.75rem 1.5rem;" onclick="closeBreathingModal()">
+        Close Exercise
+      </button>
+    </div>
+  </div>
+
+  <script src="src/app.js"></script>
+</body>
+</html>
