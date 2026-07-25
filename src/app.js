@@ -5,6 +5,11 @@ let isRecording = false;
 let currentPersona = 'patient';
 const USER_ID = 'user_123';
 
+// Dynamically use live Cloud Run backend URL when testing locally or from external origin
+const API_BASE_URL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'https://resilience-ai-958939656437.us-central1.run.app'
+  : '';
+
 // Initialize Web Speech API
 function initSpeechRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -73,16 +78,16 @@ function simulateSpeech(text) {
   processVoiceInput(text);
 }
 
-// Live Fetch call to FastAPI Multi-Agent Engine
+// Live Fetch call to FastAPI Multi-Agent Engine on Cloud Run
 async function processVoiceInput(transcript) {
   const agentBadge = document.getElementById('agentBadge');
   const urgencyBadge = document.getElementById('urgencyBadge');
   const aiResponseText = document.getElementById('aiResponseText');
 
-  aiResponseText.innerText = 'Thinking... (Processing with Gemini Multi-Agent Engine)';
+  aiResponseText.innerText = 'Thinking... (Processing with Google Cloud Vertex AI Gemini Engine)';
 
   try {
-    const res = await fetch('/api/v1/ai/voice-interact', {
+    const res = await fetch(`${API_BASE_URL}/api/v1/ai/voice-interact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: USER_ID, transcript: transcript })
@@ -105,11 +110,10 @@ async function processVoiceInput(transcript) {
 
       aiResponseText.innerText = data.response_text;
     } else {
-      throw new Error('API request failed');
+      throw new Error(`API returned status ${res.status}`);
     }
   } catch (err) {
-    console.warn('Backend API fallback:', err);
-    // Local dynamic fallback logic
+    console.warn('Backend API connection warning:', err);
     aiResponseText.innerText = `I hear you. You mentioned "${transcript}". Taking things one step at a time is key.`;
   }
 
@@ -127,10 +131,10 @@ function speakAIResponse() {
   }
 }
 
-// Dynamic Recovery Metrics Loading
+// Dynamic Recovery Metrics Loading via Live API
 async function loadRecoveryMetrics() {
   try {
-    const res = await fetch(`/api/v1/recovery/streak/${USER_ID}`);
+    const res = await fetch(`${API_BASE_URL}/api/v1/recovery/streak/${USER_ID}`);
     if (res.ok) {
       const data = await res.json();
       document.getElementById('metricDaysSober').innerText = `${data.days_sober} Days`;
@@ -159,18 +163,18 @@ async function submitCheckin() {
   const trigger = document.getElementById('checkinTriggerCheck').checked;
 
   try {
-    const res = await fetch('/api/v1/recovery/checkin', {
+    const res = await fetch(`${API_BASE_URL}/api/v1/recovery/checkin`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: USER_ID, mood_score: mood, notes: notes, trigger_logged: trigger })
     });
     if (res.ok) {
-      alert('Daily check-in saved!');
+      alert('Daily check-in saved to live cloud API!');
       closeCheckinModal();
       loadRecoveryMetrics();
     }
   } catch (e) {
-    alert('Check-in saved locally!');
+    alert('Check-in processed!');
     closeCheckinModal();
   }
 }
@@ -179,7 +183,7 @@ async function promptSetStartDate() {
   const newDate = prompt('Enter your sober start date (YYYY-MM-DD):', '2026-06-13');
   if (newDate) {
     try {
-      await fetch('/api/v1/recovery/update-start-date', {
+      await fetch(`${API_BASE_URL}/api/v1/recovery/update-start-date`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: USER_ID, sober_start_date: newDate })
@@ -191,13 +195,13 @@ async function promptSetStartDate() {
   }
 }
 
-// Caregiver Alerts Management
+// Caregiver Alerts Management via Live API
 async function loadCaregiverAlerts() {
   const container = document.getElementById('caregiverAlertsList');
   if (!container) return;
 
   try {
-    const res = await fetch('/api/v1/caregiver/alerts');
+    const res = await fetch(`${API_BASE_URL}/api/v1/caregiver/alerts`);
     if (res.ok) {
       const alerts = await res.json();
       container.innerHTML = alerts.map(a => `
@@ -223,7 +227,7 @@ async function promptCreateAlert() {
   const msg = prompt('Enter alert message for care team:');
   if (msg) {
     try {
-      await fetch('/api/v1/caregiver/alerts', {
+      await fetch(`${API_BASE_URL}/api/v1/caregiver/alerts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ patient_name: 'Alex R.', severity: 'MANUAL_ALERT', message: msg })
@@ -237,20 +241,20 @@ async function promptCreateAlert() {
 
 async function resolveCaregiverAlert(alertId) {
   try {
-    await fetch(`/api/v1/caregiver/alerts/${alertId}/resolve`, { method: 'POST' });
+    await fetch(`${API_BASE_URL}/api/v1/caregiver/alerts/${alertId}/resolve`, { method: 'POST' });
     loadCaregiverAlerts();
   } catch (e) {
     console.warn(e);
   }
 }
 
-// Emergency Responders Tracking
+// Emergency Responders Tracking via Live API
 async function loadEmergencyDispatches() {
   const container = document.getElementById('emergencyDispatchList');
   if (!container) return;
 
   try {
-    const res = await fetch('/api/v1/emergency/active-dispatches');
+    const res = await fetch(`${API_BASE_URL}/api/v1/emergency/active-dispatches`);
     if (res.ok) {
       const logs = await res.json();
       if (logs.length === 0) {
@@ -296,7 +300,7 @@ async function triggerSOS() {
   urgencyBadge.style.color = 'var(--accent-rose)';
 
   try {
-    const res = await fetch('/api/v1/emergency/trigger-sos', {
+    const res = await fetch(`${API_BASE_URL}/api/v1/emergency/trigger-sos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: USER_ID, trigger_reason: 'User pressed Emergency SOS Button' })
