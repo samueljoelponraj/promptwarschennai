@@ -35,12 +35,23 @@ class EmergencySOSResponse(BaseModel):
     contacts_notified: List[str]
     timestamp: str
 
+class DailyCheckInRequest(BaseModel):
+    user_id: str
+    mood_score: int # 1 to 10
+    notes: Optional[str] = ""
+    trigger_logged: Optional[bool] = False
+
+class StreakUpdate(BaseModel):
+    user_id: str
+    sober_start_date: str
+
 class RecoveryStreak(BaseModel):
     user_id: str
     days_sober: int
     current_streak_start: str
     triggers_log_count: int
-    mood_score_avg: float # 1.0 to 10.0
+    mood_score_avg: float
+    checkins_count: int
 
 class CaregiverAlert(BaseModel):
     id: str
@@ -49,3 +60,8 @@ class CaregiverAlert(BaseModel):
     message: str
     created_at: str
     is_resolved: bool = False
+
+class CaregiverAlertCreate(BaseModel):
+    patient_name: str
+    severity: str
+    message: str
